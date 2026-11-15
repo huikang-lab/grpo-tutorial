@@ -43,6 +43,8 @@ def summarize(path: Path) -> Dict[str, Any]:
             groups.setdefault(r["group"], set()).add(r["reward"])
         entry["groups"] = len(groups)
         entry["flat_groups"] = sum(len(v) == 1 for v in groups.values())  # zero advantage: no gradient from the group
+        # A rollout whose advantage is zero adds nothing to the gradient, so only the rest count as trained on.
+        entry["trained_tokens"] = sum(r.get("output_tokens", 0) for r in rows if r.get("advantage"))
     # Training minus rollout log-prob over the tokens both saw: how far the trainer's forward pass is from the engine.
     diffs = [t - s for r in rows if r.get("train_logprobs") and r.get("logprobs") and "train_tokens" not in r
              for t, s in zip(r["train_logprobs"], r["logprobs"])]
