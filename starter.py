@@ -115,7 +115,10 @@ def _extract_answer(solution_str: str) -> str | None:
         The stripped content of the last answer tag, or None if there is no answer tag.
     """
     ### YOUR CODE HERE ###
-    pass
+    matches = list(re.finditer(r"<answer>(.*?)</answer>", solution_str, re.DOTALL))
+    if not matches:
+        return None
+    return matches[-1].group(1).strip()
     ### END YOUR CODE ###
 
 
@@ -135,7 +138,15 @@ def _validate_numbers(equation_str: str, available_numbers: List[int]) -> bool:
         True if the equation only uses available numbers (each at most once), False otherwise.
     """
     ### YOUR CODE HERE ###
-    pass
+    from collections import Counter
+    available_counter = Counter(available_numbers)
+
+    for number_str in re.findall(r"\d+", equation_str):
+        number = int(number_str)
+        if available_counter[number] <= 0:
+            return False
+        available_counter[number] -= 1
+    return True
     ### END YOUR CODE ###
 
 
@@ -152,7 +163,14 @@ def _evaluate_equation(equation_str: str) -> float | None:
         The value of the equation as a float, or None if it is invalid or unsafe.
     """
     ### YOUR CODE HERE ###
-    pass
+    characters = set(list(equation_str))
+    if characters - set(list("0123456789 +-*/()")):
+        return None
+    try:
+        result = eval(equation_str)
+        return float(result)
+    except Exception:
+        return None
     ### END YOUR CODE ###
 
 
@@ -173,7 +191,18 @@ def reward_fn(generated_text: str, ground_truth: Dict) -> float:
         1.0, 0.1 or 0.0.
     """
     ### YOUR CODE HERE ###
-    pass
+    target = ground_truth['target']
+    available_numbers = ground_truth['numbers']
+
+    answer = _extract_answer(generated_text)
+    if answer is None:
+        return 0.0
+    if not _validate_numbers(answer, available_numbers):
+        return 0.1
+    equation_result = _evaluate_equation(answer)
+    if equation_result is None or abs(equation_result - target) > 0.0001:
+        return 0.1
+    return 1.0
     ### END YOUR CODE ###
 
 
@@ -289,7 +318,32 @@ def compute_group_normalized_advantages(
     # 7. Build the `metadata` dict of raw-reward statistics.
     advantages, raw_rewards, metadata = None, None, {}
     ### YOUR CODE HERE ###
-    pass
+    # 1. Compute the raw reward of every response with `reward_fn`.
+    rewards = [
+        reward_fn(response, repeated_ground_truth)
+        for response, repeated_ground_truth
+        in zip(rollout_responses, repeated_ground_truths)
+    ]
+    # 2. Reshape the rewards into a 2D tensor of shape (-1, group_size).
+    raw_rewards = torch.tensor(rewards, dtype=torch.float32)
+    grouped_rewards = raw_rewards.view(-1, group_size)
+    # 3. Compute each group's mean reward.
+    group_means = grouped_rewards.mean(dim=1, keepdim=True)
+    # 4. Subtract the group mean from each reward.
+    grouped_advantages = grouped_rewards - group_means
+    # 5. If `normalize_by_std`, divide by (group std + advantage_eps).
+    if normalize_by_std:
+        group_stds = grouped_rewards.std(dim=1, keepdim=True)
+        grouped_advantages = grouped_advantages / (group_stds + advantage_eps)
+    # 6. Flatten the advantages back to 1D.
+    advantages = grouped_advantages.view(-1)
+    # 7. Build the `metadata` dict of raw-reward statistics.
+    metadata = {
+        "mean": torch.mean(raw_rewards),
+        "std": torch.std(raw_rewards),
+        "max": torch.max(raw_rewards),
+        "min": torch.min(raw_rewards),
+    }
     ### END YOUR CODE ###
     return advantages, raw_rewards, metadata
 
@@ -325,7 +379,18 @@ def compute_loss(
     """
     loss, metadata = None, {}
     ### YOUR CODE HERE ###
-    pass
+    # 1. Probability ratio: ratio = exp(policy_log_probs - old_log_probs).
+    ratio = torch.exp(policy_log_probs - old_log_probs)
+    # 2. Unclipped term: advantages * ratio.
+    unclipped_term = advantages * ratio
+    # 3. Clipped term: advantages * clamp(ratio, 1 - clip_range, 1 + clip_range).
+    clipped_term = advantages * torch.clamp(ratio, 1 - clip_range, 1 + clip_range)
+    # 4. loss = -min(unclipped term, clipped term).
+    loss = -torch.min(unclipped_term, clipped_term)
+
+    metadata = {
+        "clip_fraction": (clipped_term < unclipped_term).float().mean()
+    }
     ### END YOUR CODE ###
     return loss, metadata
 
@@ -344,7 +409,9 @@ def masked_mean(tensor: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         scalar loss
     """
     ### YOUR CODE HERE ###
-    pass
+    mask = mask.to(tensor.dtype)
+    per_sequence = (tensor * mask).sum(dim=1) / mask.sum(dim=1)
+    return per_sequence.mean()
     ### END YOUR CODE ###
 
 
@@ -361,7 +428,9 @@ def masked_mean_drgrpo(tensor: torch.Tensor, mask: torch.Tensor, num_tokens: int
         scalar loss
     """
     ### YOUR CODE HERE ###
-    pass
+    mask = mask.to(tensor.dtype)
+    per_sequence = (tensor * mask).sum(dim=1) / num_tokens
+    return per_sequence.mean()
     ### END YOUR CODE ###
 
 
