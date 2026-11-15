@@ -27,6 +27,7 @@ METHOD: Dict[str, str] = {"grpo": "GRPO", "dr_grpo": "Dr.GRPO"}
 COLOUR: Dict[str, str] = {"grpo": "#2a78d6", "dr_grpo": "#eb6834"}
 REFERENCE: str = "#87919c"
 ZIP_FOLDER: str = "GStar-Assignment-3-GRPO"
+VIEWER_URL: str = "https://huikang-lab.github.io/grpo-tutorial/"
 
 ESCAPES: Dict[str, str] = {
     "\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_", "{": r"\{", "}": r"\}",
@@ -257,6 +258,7 @@ def report(data: Dict[str, Any], checkpoint_url: str | None) -> str:
                r"Hui-Kang Tong\\[3pt]GStar Bootcamp 2026 | Assignment 3\\[3pt]" + date + r"\end{center}\vspace{6pt}")
     link = (r"\url{" + checkpoint_url + "}") if checkpoint_url else r"\textcolor{red}{\textbf{[link to be added]}}"
     out.append(r"\textbf{Model checkpoints:} " + link + r"\par")
+    out.append(r"\textbf{Rollout viewer:} \url{" + VIEWER_URL + r"} (every training rollout of the runs below)\par")
     out.append(r"Tasks 1--5 are implemented in \texttt{starter.py}. Every run uses the default settings "
                r"(80 GRPO steps of 16 prompts $\times$ 8 samples, learning rate $7\times10^{-6}$, seed 42) on one NVIDIA H200 "
                r"through Modal. Accuracy is measured on the 1024 test problems with one sample per problem at temperature 1, "
