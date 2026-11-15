@@ -139,7 +139,7 @@ try {
     e.run === open.run && e.ts === open.ts && e.split === "train" && String(e.step) === query.get("step"));
   if (open && step && query.get("rollout")) {
     document.querySelector("#loading-state").style.display = "none";
-    openRollout({
+    await openRollout({
       entry: step, rows: await fetchJsonl(step.path),
       method: `${METHODS[open.config.loss_type] ?? open.config.loss_type} · L${open.config.max_tokens}`,
       onClose: () => { location.href = `training.html?${new URLSearchParams({run: open.run, step: String(step.step)})}`; },

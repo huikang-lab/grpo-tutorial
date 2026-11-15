@@ -45,13 +45,14 @@ class RolloutLogger:
         logprobs = None
         if out.logprobs:
             logprobs = [round(next(iter(lp.values())).logprob, LOGPROB_DIGITS) for lp in out.logprobs]
-        prompt_tokens = self.tokenizer(prompt)["input_ids"]
+        # Only ids are kept: the viewer decodes them with tokenizer/tokenizer.json. A group shares one prompt, so it
+        # rides on sample 0 alone.
+        prompt_tokens = self.tokenizer(prompt)["input_ids"] if extra.get("sample", 0) == 0 else None
         return {
             **extra, "target": ground_truth["target"], "numbers": ground_truth["numbers"], "reward": float(reward),
-            "equation": equation, "result": result, "finish_reason": out.finish_reason, "prompt_tokens": prompt_tokens,
-            "prompt_pieces": self.tokenizer.batch_decode([[t] for t in prompt_tokens]),
-            "output_tokens": len(out.token_ids), "prompt": prompt, "text": out.text, "tokens": list(out.token_ids),
-            "pieces": self.tokenizer.batch_decode([[t] for t in out.token_ids]), "logprobs": logprobs,
+            "equation": equation, "result": result, "finish_reason": out.finish_reason,
+            **({"prompt_tokens": prompt_tokens} if prompt_tokens is not None else {}),
+            "output_tokens": len(out.token_ids), "tokens": list(out.token_ids), "logprobs": logprobs,
         }
 
 

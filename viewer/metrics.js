@@ -29,6 +29,10 @@ const CHARTS = [
   {title: "Logprob diff", subtitle: "training minus rollout log-prob per token: trainer vs engine",
    series: (run) => [{label: null, points: run.index.train.filter((e) => Number.isFinite(e.logprob_diff))
      .map((e) => ({x: e.step, y: e.logprob_diff}))}]},
+  {title: "Cumulative decode tokens", subtitle: "every token generated so far: training rollouts and eval answers",
+   series: (run) => [{label: null, points: cumulative([...run.index.train, ...run.index.eval])}]},
+  {title: "Cumulative training tokens", subtitle: "rollout tokens the trainer has taken gradients through so far",
+   series: (run) => [{label: null, points: cumulative(run.index.train)}]},
   {title: "Loss", subtitle: "summed over the step's microbatches",
    series: (run) => [{label: null, points: run.train.map((r) => ({x: r.step, y: r.loss}))}]},
   {title: "Grad norm", subtitle: "L2, before clipping to 1.0",
@@ -39,6 +43,14 @@ const CHARTS = [
         {label: "train", points: run.train.map((r) => ({x: r.step, y: r.t_train}))}]
      : [{label: null, points: run.train.map((r) => ({x: r.step, y: r.t_gen + r.t_train}))}])},
 ];
+
+// A running total of completion tokens by step. The eval at step s runs after that step's update, so it counts there.
+function cumulative(entries) {
+  const byStep = new Map();
+  for (const e of entries) byStep.set(e.step, (byStep.get(e.step) ?? 0) + e.completion_tokens);
+  let total = 0;
+  return [...byStep].sort((a, b) => a[0] - b[0]).map(([step, tokens]) => ({x: step, y: (total += tokens)}));
+}
 
 const chartsEl = document.querySelector("#charts");
 const loadingEl = document.querySelector("#loading-state");
@@ -58,7 +70,9 @@ function svgElement(name, attributes) {
 function formatValue(value) {
   if (!Number.isFinite(value)) return "—";
   const magnitude = Math.abs(value);
-  if (magnitude !== 0 && (magnitude < 0.001 || magnitude >= 100_000)) return value.toExponential(2);
+  if (magnitude >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (magnitude >= 100_000) return `${(value / 1_000).toFixed(0)}k`;
+  if (magnitude !== 0 && magnitude < 0.001) return value.toExponential(2);
   if (magnitude >= 100) return value.toFixed(0);
   if (magnitude >= 1) return value.toFixed(2);
   return value.toFixed(4);

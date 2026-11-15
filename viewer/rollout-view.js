@@ -3,7 +3,8 @@
 // The training tab opens it at ?run=&step=&rollout=; j / k step through the rollouts, Esc goes back to the step's table.
 
 import {
-  addInfoField, formatNumber, hideTooltip, installShades, openEntryEl, percent, shadeStep, showTooltip, summaryEl,
+  addInfoField, decodeTokenIds, formatNumber, hideTooltip, installShades, loadVocab, openEntryEl, percent, shadeStep,
+  showTooltip, summaryEl,
 } from "./common.js";
 
 const tokenEl = document.querySelector("#token-content");
@@ -32,11 +33,28 @@ function aligned(row) {
   return Array.isArray(row.train_logprobs) && !row.train_tokens && row.logprobs;
 }
 
+// A group's eight rollouts share one prompt, which the step file keeps on sample 0 alone. Older runs kept it as text.
+function promptOf(row) {
+  const source = row.prompt_tokens || row.prompt ? row
+    : state.rows.find((r) => r.group === row.group && (r.prompt_tokens || r.prompt));
+  return {tokens: source?.prompt_tokens ?? null, text: source?.prompt ?? ""};
+}
+
+// Pieces are decoded once per row and kept on it, so hovering does not decode again.
+function piecesOf(row) {
+  row.decoded ??= {
+    prompt: promptOf(row).tokens ? decodeTokenIds(promptOf(row).tokens) : null,
+    completion: decodeTokenIds(row.tokens),
+  };
+  return row.decoded;
+}
+
 function tokenTooltip(row, kind, k) {
+  const pieces = piecesOf(row);
   if (kind === "prompt") {
-    return `prompt · pos ${k} · token ${row.prompt_tokens[k].toLocaleString()} · ${JSON.stringify(row.prompt_pieces[k])}`;
+    return `prompt · pos ${k} · token ${promptOf(row).tokens[k].toLocaleString()} · ${JSON.stringify(pieces.prompt[k])}`;
   }
-  const parts = [`completion · pos ${k} · token ${row.tokens[k].toLocaleString()} · ${JSON.stringify(row.pieces[k])}`];
+  const parts = [`completion · pos ${k} · token ${row.tokens[k].toLocaleString()} · ${JSON.stringify(pieces.completion[k])}`];
   const sampled = row.logprobs ? row.logprobs[k] : null;
   parts.push(Number.isFinite(sampled) ? `rollout logprob ${sampled.toFixed(6)} · p ${Math.exp(sampled).toFixed(4)}`
     : "rollout logprob unavailable");
@@ -73,14 +91,15 @@ function selectToken(position) {
 function renderTokens(row) {
   const prompt = document.createElement("span");
   prompt.className = "segment prompt";
-  if (row.prompt_pieces) {
-    row.prompt_pieces.forEach((piece, k) => prompt.append(tokenNode(row, "prompt", k, piece, null)));
+  const pieces = piecesOf(row);
+  if (pieces.prompt) {
+    pieces.prompt.forEach((piece, k) => prompt.append(tokenNode(row, "prompt", k, piece, null)));
   } else {
-    prompt.textContent = row.prompt;
+    prompt.textContent = promptOf(row).text;
   }
   const completion = document.createElement("span");
   completion.className = "segment completion";
-  row.pieces.forEach((piece, k) => completion.append(tokenNode(row, "completion", k, piece, shadeFor(row, k))));
+  pieces.completion.forEach((piece, k) => completion.append(tokenNode(row, "completion", k, piece, shadeFor(row, k))));
   tokenEl.replaceChildren(prompt, completion);
   const wanted = params().get("token");
   if (wanted) selectToken(wanted)?.scrollIntoView({block: "center"});
@@ -149,7 +168,7 @@ function renderSide(row) {
   sideField("answer", row.equation === null ? "no <answer>" : row.equation);
   sideField("value", row.result === null ? "—" : String(+row.result.toFixed(6)));
   const counts = document.createElement("div");
-  const promptCount = row.prompt_tokens ? row.prompt_tokens.length : null;
+  const promptCount = promptOf(row).tokens ? promptOf(row).tokens.length : null;
   counts.innerHTML = `${promptCount === null ? "" : `<span class="prompt-count">${promptCount} prompt</span> · `}` +
     `<span class="completion-count">${row.output_tokens} completion</span>`;
   sideField("tokens", counts);
@@ -224,7 +243,8 @@ function renderRollout() {
   renderSide(state.rollout);
 }
 
-export function openRollout({entry, rows, method, onClose}) {
+export async function openRollout({entry, rows, method, onClose}) {
+  await loadVocab();
   installShades();
   state.entry = entry;
   state.rows = rows;

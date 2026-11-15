@@ -204,6 +204,72 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
   };
 }
 
+// A step file keeps token ids only; their text comes from the committed tokenizer, as in arc3-coach. One fetch
+// decodes every rollout on the page.
+const TOKENIZER_PATH = "tokenizer/tokenizer.json";
+let vocab = null;
+
+// Byte-level BPE writes each byte as a printable character; this is that mapping read backwards.
+function byteAlphabet() {
+  const codes = new Map();
+  for (const [start, end] of [[33, 127], [161, 173], [174, 256]]) {
+    for (let byte = start; byte < end; byte += 1) codes.set(byte, byte);
+  }
+  let spare = 0;
+  for (let byte = 0; byte < 256; byte += 1) {
+    if (!codes.has(byte)) codes.set(byte, 256 + spare++);
+  }
+  const alphabet = new Map();
+  for (const [byte, code] of codes) alphabet.set(String.fromCharCode(code), byte);
+  return alphabet;
+}
+
+function pieceBytes(piece, alphabet) {
+  const bytes = new Uint8Array(piece.length);
+  for (let index = 0; index < piece.length; index += 1) {
+    const byte = alphabet.get(piece[index]);
+    if (byte === undefined) return new TextEncoder().encode(piece);
+    bytes[index] = byte;
+  }
+  return bytes;
+}
+
+export async function loadVocab() {
+  if (vocab) return;
+  let tokenizer;
+  try {
+    const response = await fetch(new URL(TOKENIZER_PATH, ROOT));
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    tokenizer = await response.json();
+  } catch (error) {
+    throw new Error(`${TOKENIZER_PATH}: ${error.message}`);
+  }
+  if (tokenizer?.model?.type !== "BPE" || !tokenizer.model.vocab) {
+    throw new Error(`${TOKENIZER_PATH} is not the expected BPE tokenizer`);
+  }
+  const alphabet = byteAlphabet();
+  const next = [];
+  for (const [piece, id] of Object.entries(tokenizer.model.vocab)) next[id] = pieceBytes(piece, alphabet);
+  const encoder = new TextEncoder();
+  for (const added of tokenizer.added_tokens || []) next[added.id] = encoder.encode(added.content);
+  vocab = next;
+}
+
+// Streaming across pieces keeps a character whose UTF-8 bytes cross a token boundary whole, while still leaving one
+// piece per token id.
+export function decodeTokenIds(tokenIds) {
+  if (!vocab) throw new Error("Tokenizer has not loaded");
+  const decoder = new TextDecoder("utf-8", {fatal: false});
+  const decoded = tokenIds.map((id) => {
+    const bytes = vocab[id];
+    if (bytes === undefined) throw new Error(`Tokenizer has no token id ${id}`);
+    return decoder.decode(bytes, {stream: true});
+  });
+  const tail = decoder.decode();
+  if (tail && decoded.length) decoded[decoded.length - 1] += tail;
+  return decoded;
+}
+
 export const SHADE_STEPS = 32;
 
 // Probability mass approaches one as a log-prob approaches zero. Its complement is a bounded darkness scale, so
