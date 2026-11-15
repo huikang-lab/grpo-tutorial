@@ -2,3 +2,10 @@
 output/
 __pycache__/
 slurm-*.out
+logs/
+rollouts-index.jsonl
+runs-index.jsonl
+*.jsonl.tmp
+accuracy.pdf
+REPORT.tex
+SUBMISSION.zip

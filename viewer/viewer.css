@@ -1,0 +1,265 @@
+/* The arc3-coach viewer family's look: a rail that says what the page is and what is open, and a pane beside it that
+   is whatever you are looking at. Shared by rollouts.html, training.html and metrics.html. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  overflow: hidden;
+  padding: 20px;
+  background: #f5f5f5;
+  color: #333;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+a { color: #2196f3; }
+.container {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  display: flex;
+  gap: 18px;
+}
+nav {
+  flex: 0 0 auto;
+  padding: 10px 0 20px;
+  text-align: center;
+  font-size: 16px;
+}
+nav a { text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+nav strong { font-size: 22px; }
+nav strong a { color: #333; }
+nav strong a:hover { color: #2196f3; }
+.summary {
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.prompt-count { color: #64748b; }
+.completion-count { color: #059669; font-weight: 600; }
+.rail {
+  flex: 0 0 170px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.view {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.open-entry {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+  font-size: 13px;
+}
+.open-entry:empty { display: none; }
+.open-field {
+  padding: 10px 13px;
+  border-bottom: 1px solid #e5e7eb;
+  overflow-wrap: anywhere;
+}
+.open-field:last-child { border-bottom: 0; }
+.open-label { color: #87919c; }
+.config-dump summary { cursor: pointer; color: #4b5563; }
+.config-dump pre {
+  margin: 7px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #4b5563;
+}
+
+.table-wrap {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+body.has-detail .table-wrap { display: none; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 11px 13px;
+  color: white;
+  background: #4a5568;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+th:hover { background: #5a6578; }
+th.num, td.num { text-align: right; }
+td {
+  padding: 10px 13px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  font-size: 13px;
+}
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #f8fafc; }
+.filter-value {
+  padding: 0; color: #1d4ed8; background: transparent; border: 0;
+  font: inherit; text-align: left; cursor: pointer;
+}
+.filter-value:hover { text-decoration: underline; }
+.muted { color: #87919c; }
+.loading,
+.empty-state {
+  padding: 40px;
+  color: #777;
+  text-align: center;
+}
+.empty-state { display: none; color: #999; }
+
+.call-list, .run-list { display: grid; gap: 5px; margin-top: 7px; }
+.call-link, .run-link {
+  display: block;
+  width: 100%; padding: 6px 8px; color: #334155; background: #f8fafc;
+  border: 1px solid #e2e8f0; border-radius: 4px; text-align: left;
+  cursor: pointer; font: inherit; text-decoration: none;
+}
+.call-link:hover, .call-link.is-open, .run-link:hover, .run-link.is-open {
+  color: #1d4ed8; background: #eff6ff; border-color: #93c5fd;
+}
+
+#detail-section {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 18px;
+}
+body.has-detail #detail-section { display: flex; }
+.token-content {
+  flex: 2 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 15px;
+  color: #26313d;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 13px/1.6 "SF Mono", Monaco, "Courier New", monospace;
+}
+.side-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+  font-size: 13px;
+}
+.side-heading { padding: 12px 13px 4px; font-weight: 600; color: #26313d; }
+.segment { padding: 1px 0; }
+.segment.prompt { color: #6b7280; }
+.segment.completion { color: #000; }
+.token { border-radius: 2px; cursor: pointer; }
+.completion-token { background: var(--completion-token-background, #fff9c4); }
+.token:hover {
+  background: rgba(96, 165, 250, .16);
+  outline: 1px solid #60a5fa;
+  outline-offset: 1px;
+}
+.token.selected,
+.token.selected:hover {
+  background: #2563eb;
+  color: white;
+  outline: 1px solid #1d4ed8;
+}
+/* The mark that stands in for a line break so a newline token can be hovered: quiet beside the real glyphs, and
+   unselectable so copied text keeps only the newline it marks. */
+.newline-mark {
+  user-select: none;
+  color: #94a3b8;
+  opacity: .55;
+}
+.token.selected .newline-mark { color: white; }
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  display: none;
+  max-width: 440px;
+  padding: 6px 9px;
+  color: white;
+  background: rgba(15, 23, 42, .95);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre-line;
+  font: 12px/1.4 "SF Mono", Monaco, monospace;
+}
+
+.charts {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  align-content: start;
+}
+.chart-card {
+  padding: 12px 14px 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+.chart-title { color: #26313d; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.chart-subtitle { color: #87919c; font-size: 12px; }
+.chart-svg { display: block; width: 100%; height: 150px; margin-top: 6px; }
+/* Recessive: the data is the ink, the frame is not. */
+.chart-grid { stroke: #e5e7eb; stroke-width: 1; }
+.chart-axis-text { fill: #87919c; font: 10px "SF Mono", Monaco, monospace; }
+.chart-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-reference { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.chart-point { stroke: white; stroke-width: 2; }
+.chart-crosshair { stroke: #94a3b8; stroke-width: 1; stroke-dasharray: 3 3; }
+.chart-hit { fill: transparent; }
+.chart-label { font: 10px "SF Mono", Monaco, monospace; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+  color: #52606d;
+  font: 11px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.legend-item {
+  display: inline-flex; align-items: center; gap: 5px; padding: 0;
+  background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
+}
+.legend-item.is-hidden { color: #a8b0ba; text-decoration: line-through; }
+.legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+@media (max-width: 900px) {
+  body { padding: 12px; }
+  nav { padding: 4px 0 14px; }
+  .container { flex-direction: column; }
+  .rail { flex: 0 0 auto; }
+  .open-entry { max-height: 34vh; }
+  #detail-section { flex-direction: column; }
+}

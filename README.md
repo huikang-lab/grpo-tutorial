@@ -38,11 +38,13 @@ python zero_shot_eval.py -m output/checkpoints/<run>_<timestamp> --max_tokens 51
 
 ```bash
 python train_logged.py --loss_type grpo --max_tokens 256
-python serve.py                  # then open http://127.0.0.1:44834/rollouts.html
+./serve.sh                       # prints the URLs: training.html, metrics.html
 ```
 
-- **Files:** `output/rollouts/<run>/<timestamp>/train/step_NNNN.jsonl` holds all 128 rollouts of a step with their group, reward and advantage. `eval/step_NNNN.jsonl` holds one sample per test problem. Each line is one completion with its tokens and log-probs.
-- **Viewer:** a table of every saved step (accuracy, 0.1 and 0.0 counts, truncations, groups with no learning signal), then the rollouts of a step, then one rollout with its tokens shaded by surprise. Click a cell to filter on it, click a header to sort, and use <kbd>j</kbd> / <kbd>k</kbd> to step through rollouts.
+- **Files:** `output/rollouts/<run>/<timestamp>/train/step_NNNN.jsonl` holds all 128 rollouts of a step with their group, reward and advantage. `eval/step_NNNN.jsonl` holds one sample per test problem. Each line is one completion with its prompt and completion tokens, the rollout log-prob of each completion token and, for training rollouts, the trainer's log-prob of it.
+- **Training:** the trained runs and the zero-shot baselines, one row each. A run opens its steps (reward, zero-advantage groups, truncations, loss, grad norm, eval, log-prob diff); a step opens a table of its 128 rollouts; a rollout opens its prompt and completion as one token stream, shaded by surprise or by training minus rollout log-prob, beside its reward and its group. Click a blue value to filter on it, click a header to sort, <kbd>j</kbd> / <kbd>k</kbd> step through rollouts and <kbd>Esc</kbd> goes back.
+- **Metrics:** every run on one set of charts, with the zero-shot baselines from `output/zero_shot/L<len>.json` as dashed lines; pick a run for its own charts and config.
+- `./serve.sh` serves in the background, keeps `rollouts-index.jsonl` and `runs-index.jsonl` fresh, and replaces an earlier server on the same port. Logs go to `logs/`.
 - `starter.py` is not modified. `train_logged.py` wraps its functions and then calls `starter.main()`.
 
 ## Modal
@@ -54,7 +56,8 @@ uvx modal run run_modal.py --args "zero_shot_eval.py --max_tokens 512"
 uvx modal run run_modal.py --args "train_logged.py --loss_type grpo --max_tokens 256"
 STARTER=path/to/your/starter.py uvx modal run run_modal.py --args "..."   # upload another starter.py instead
 
-uvx modal volume get --force grpo-output rollouts output/   # copy the rollouts here, then: python serve.py
+mkdir -p output && uvx modal volume get --force grpo-output rollouts output/   # copy the rollouts here
+uvx modal volume get --force grpo-output tb output/                            # and the metrics, then: ./serve.sh
 ```
 
 ## Acknowledgments
