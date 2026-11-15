@@ -5,10 +5,14 @@ export const tooltipEl = document.querySelector("#tooltip");
 export const summaryEl = document.querySelector("#summary");
 export const openEntryEl = document.querySelector("#open-entry");
 
+// Every data path is relative to the repository root. ./serve.sh serves the pages at the root, but a static host such
+// as GitHub Pages serves them from viewer/, so the root is one level up there.
+const ROOT = new URL(location.pathname.includes("/viewer/") ? "../" : "./", location.href);
+
 export async function fetchJsonl(path) {
   let response;
   try {
-    response = await fetch(path, {cache: "no-store"});
+    response = await fetch(new URL(path, ROOT), {cache: "no-store"});
   } catch (error) {
     throw new Error(`${path}: ${error.message}`);
   }
