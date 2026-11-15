@@ -1,0 +1,13 @@
+{
+ "run": "dr_grpo_L512_posadv",
+ "timestamp": 1794766265,
+ "argv": [
+  "--loss_type",
+  "dr_grpo",
+  "--max_tokens",
+  "512",
+  "--run_tag",
+  "posadv"
+ ],
+ "tb_dir": "output/tb/dr_grpo_L512_posadv/1794766265"
+}

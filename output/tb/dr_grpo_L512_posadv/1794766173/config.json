@@ -1,0 +1,19 @@
+{
+ "loss_type": "dr_grpo",
+ "max_tokens": 512,
+ "n_grpo_steps": 80,
+ "lr": 7e-06,
+ "seed": 42,
+ "eval_every": 10,
+ "model_id": "Qwen/Qwen3-1.7B",
+ "run_tag": "posadv",
+ "save_model": true,
+ "preset": "auto",
+ "kv_cache_tokens": 400000,
+ "max_num_seqs": 512,
+ "block_m": 16,
+ "block_n": 64,
+ "grad_acc_steps": 32,
+ "gpu": "NVIDIA H200",
+ "memory_class": "141GB"
+}
