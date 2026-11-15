@@ -1,0 +1,11 @@
+{
+ "run": "grpo_L256",
+ "timestamp": 1794729760,
+ "argv": [
+  "--loss_type",
+  "grpo",
+  "--max_tokens",
+  "256"
+ ],
+ "tb_dir": "output/tb/grpo_L256/1794729760"
+}

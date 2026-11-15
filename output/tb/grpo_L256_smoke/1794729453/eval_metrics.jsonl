@@ -1,0 +1,2 @@
+{"step": 0, "accuracy": 0.29296875, "mean_reward": 0.0029296875, "std_reward": 0.054073650389909744, "avg_output_tokens": 255.9345703125, "count_correct": 3, "count_partial": 0, "count_failed": 1021}
+{"step": 2, "accuracy": 0.390625, "mean_reward": 0.00390625, "std_reward": 0.062408290803432465, "avg_output_tokens": 255.9189453125, "count_correct": 4, "count_partial": 0, "count_failed": 1020}

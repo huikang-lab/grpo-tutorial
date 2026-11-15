@@ -1,5 +1,8 @@
 .venv/
-output/
+output/*
+!output/rollouts/
+!output/tb/
+!output/zero_shot/
 __pycache__/
 slurm-*.out
 logs/

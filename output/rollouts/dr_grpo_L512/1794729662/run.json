@@ -1,0 +1,11 @@
+{
+ "run": "dr_grpo_L512",
+ "timestamp": 1794729662,
+ "argv": [
+  "--loss_type",
+  "dr_grpo",
+  "--max_tokens",
+  "512"
+ ],
+ "tb_dir": "output/tb/dr_grpo_L512/1794729662"
+}

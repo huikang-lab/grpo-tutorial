@@ -1,0 +1,2 @@
+{"step": 1, "loss": 0.0, "grad_norm": 0.0, "reward_mean": 0.0, "reward_std": 0.0, "avg_output_tokens": 256.0, "t_gen": 3.3630316257476807, "t_train": 3.125412940979004}
+{"step": 2, "loss": 0.0, "grad_norm": 0.0, "reward_mean": 0.0, "reward_std": 0.0, "avg_output_tokens": 256.0, "t_gen": 2.7910513877868652, "t_train": 3.212170124053955}
