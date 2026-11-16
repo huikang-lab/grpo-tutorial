@@ -55,7 +55,12 @@ function cumulative(entries, key) {
 const chartsEl = document.querySelector("#charts");
 const loadingEl = document.querySelector("#loading-state");
 const emptyEl = document.querySelector("#empty-state");
-const state = {runs: [], zeroShot: [], open: null, hidden: new Set()};
+const state = {runs: [], zeroShot: [], open: null, length: null, hidden: new Set()};
+
+// The length tab (?max_tokens=) keeps only the runs trained at that generation budget.
+function shownRuns() {
+  return state.runs.filter((run) => !state.length || run.config.max_tokens === state.length);
+}
 
 function runLabel(run) {
   return run.run;
@@ -80,7 +85,7 @@ function formatValue(value) {
 
 // The lines a chart draws: one per run when every run is shown, the run's own measures when one is open.
 function linesFor(chart) {
-  const runs = state.open ? [state.open] : state.runs;
+  const runs = state.open ? [state.open] : shownRuns();
   const lines = [];
   for (const run of runs) {
     for (const series of chart.series(run)) {
@@ -98,13 +103,14 @@ function linesFor(chart) {
 
 function referencesFor(chart) {
   if (!chart.references) return [];
-  const lengths = state.open ? [state.open.config.max_tokens, 1024] : null;
+  const length = state.open ? state.open.config.max_tokens : state.length;
+  const lengths = length ? [length, 1024] : null;
   return state.zeroShot
     .filter((z) => !lengths || lengths.includes(z.max_tokens))
     .map((z) => ({label: `zero-shot L${z.max_tokens}`, value: z.accuracy}));
 }
 
-const PLOT = {left: 46, right: 14, top: 10, bottom: 20, width: 420, height: 150};
+const PLOT = {left: 58, right: 14, top: 10, bottom: 20, width: 560, height: 260};
 
 function drawChart(card, chart, lines, references) {
   const visible = lines.filter((line) => !state.hidden.has(line.key));
@@ -173,9 +179,10 @@ function drawChart(card, chart, lines, references) {
   svg.append(svgElement("rect", {class: "chart-hit", x: PLOT.left, y: PLOT.top, width: plotWidth, height: plotHeight}));
   const steps = [...new Set(xs)].sort((a, b) => a - b);
   svg.addEventListener("mousemove", (event) => {
-    const box = svg.getBoundingClientRect();
-    const scale = box.width / PLOT.width;
-    const value = xMin + ((event.clientX - box.left) / scale - PLOT.left) / plotWidth * (xMax - xMin);
+    // The drawing keeps its aspect ratio, so it can sit centred in a wider box; the SVG's own transform maps the
+    // pointer into plot units wherever the drawing landed.
+    const pointer = new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM().inverse());
+    const value = xMin + (pointer.x - PLOT.left) / plotWidth * (xMax - xMin);
     const step = steps.reduce((best, s) => (Math.abs(s - value) < Math.abs(best - value) ? s : best), steps[0]);
     crosshair.setAttribute("x1", String(xAt(step)));
     crosshair.setAttribute("x2", String(xAt(step)));
@@ -242,8 +249,9 @@ function runLink(run) {
   const link = document.createElement("a");
   link.className = "run-link";
   const params = new URLSearchParams();
+  if (state.length) params.set("max_tokens", String(state.length));
   if (run) params.set("run", run.run);
-  link.href = `${location.pathname}${run ? `?${params}` : ""}`;
+  link.href = `${location.pathname}${params.size ? `?${params}` : ""}`;
   link.textContent = run ? run.run : "every run";
   if (run === state.open) link.classList.add("is-open");
   return link;
@@ -260,6 +268,22 @@ function configDetails(config) {
   return details;
 }
 
+// One tab per generation budget the runs were trained at, and one for all of them. Picking a tab closes an open run.
+function lengthTabs() {
+  const tabs = document.createElement("div");
+  tabs.className = "run-list";
+  const lengths = [...new Set(state.runs.map((run) => run.config.max_tokens))].sort((a, b) => a - b);
+  for (const length of [null, ...lengths]) {
+    const link = document.createElement("a");
+    link.className = "run-link";
+    link.href = `${location.pathname}${length ? `?max_tokens=${length}` : ""}`;
+    link.textContent = length ? `max_tokens ${length}` : "every length";
+    if (length === state.length) link.classList.add("is-open");
+    tabs.append(link);
+  }
+  return tabs;
+}
+
 function renderRail() {
   summaryEl.replaceChildren();
   const open = state.open;
@@ -267,18 +291,20 @@ function renderRail() {
     ? [`${open.train.length} of ${open.config.n_grpo_steps} steps`,
        `final eval ${formatNumber(open.eval.at(-1)?.accuracy, 1)}%`,
        `best eval ${formatNumber(Math.max(...open.eval.map((r) => r.accuracy)), 1)}%`]
-    : [`${state.runs.length} runs`, `${state.zeroShot.length} zero-shot evals`];
+    : [`${shownRuns().length} runs`, `${state.zeroShot.length} zero-shot evals`];
   for (const text of lines) {
     const line = document.createElement("div");
     line.textContent = text;
     summaryEl.append(line);
   }
   openEntryEl.replaceChildren();
+  const lengthField = addInfoField("max tokens", "");
+  lengthField.lastElementChild.replaceWith(lengthTabs());
   const field = addInfoField("run", "");
   field.lastElementChild.remove();
   const list = document.createElement("div");
   list.className = "run-list";
-  list.append(runLink(null), ...state.runs.map(runLink));
+  list.append(runLink(null), ...shownRuns().map(runLink));
   field.append(list);
   if (open) {
     addInfoField("loss", open.config.loss_type);
@@ -287,7 +313,7 @@ function renderRail() {
     addInfoField("gpu", open.config.gpu ?? "—");
     addInfoField("config", configDetails(open.config));
   } else {
-    for (const z of state.zeroShot) {
+    for (const z of state.zeroShot.filter((z) => !state.length || [state.length, 1024].includes(z.max_tokens))) {
       addInfoField(`zero-shot L${z.max_tokens}`, `${formatNumber(z.accuracy, 2)}% · truncated ${formatNumber(100 * z.truncated_frac, 1)}%`);
     }
   }
@@ -317,8 +343,9 @@ async function loadRuns() {
 
 try {
   await loadRuns();
-  const wanted = new URLSearchParams(location.search).get("run");
-  state.open = state.runs.find((run) => run.run === wanted) || null;
+  const query = new URLSearchParams(location.search);
+  state.length = Number(query.get("max_tokens")) || null;
+  state.open = shownRuns().find((run) => run.run === query.get("run")) || null;
   if (state.open) state.hidden.clear();
   loadingEl.style.display = "none";
   if (!state.runs.length) emptyEl.style.display = "block";

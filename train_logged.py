@@ -95,7 +95,7 @@ def patch_starter() -> None:
         if len(logger.pending) == len(ground_truths):
             logger.records = [
                 logger.record(prompt, out, gt, raw_rewards[i].item(), index=i, group=i // group_size,
-                              sample=i % group_size, advantage=round(advantages[i].item(), 4))
+                              sample=i % group_size, advantage=round(advantages[i].item(), 8))
                 for i, ((prompt, out), gt) in enumerate(zip(logger.pending, ground_truths))]
         logger.pending = []
         logger.train_rows = []

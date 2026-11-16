@@ -45,6 +45,14 @@ export function formatNumber(value, digits = 0) {
   return value.toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits});
 }
 
+// Signed, at `digits` places; one too small to show there (a length-shaped reward's) keeps its size in e-notation
+// rather than reading as zero.
+export function formatAdvantage(value, digits = 3) {
+  const sign = value > 0 ? "+" : "";
+  if (value !== 0 && Math.abs(value) < 10 ** -digits) return `${sign}${value.toExponential(1)}`;
+  return `${sign}${value.toFixed(digits)}`;
+}
+
 export function percent(part, whole) {
   return whole ? (100 * part) / whole : NaN;
 }

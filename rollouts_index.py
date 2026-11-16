@@ -30,9 +30,9 @@ def summarize(path: Path) -> Dict[str, Any]:
     rewards = [r["reward"] for r in rows]
     entry = {
         "count": len(rows),
-        "correct": sum(abs(x - 1.0) < 1e-8 for x in rewards),
+        "correct": sum(x > 0.5 for x in rewards),  # a shaped reward scores a correct answer just under 1.0
         "partial": sum(abs(x - 0.1) < 1e-8 for x in rewards),
-        "wrong": sum(abs(x) < 1e-8 for x in rewards),
+        "wrong": sum(abs(x) < 0.05 for x in rewards),
         "mean_reward": round(sum(rewards) / n, 4),
         "truncated": sum(r.get("finish_reason") == "length" for r in rows),
         "completion_tokens": sum(r.get("output_tokens", 0) for r in rows),

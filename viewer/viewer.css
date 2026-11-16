@@ -219,7 +219,7 @@ body.has-detail #detail-section { display: flex; }
   overflow: auto;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
   align-content: start;
 }
 .chart-card {
@@ -230,7 +230,7 @@ body.has-detail #detail-section { display: flex; }
 }
 .chart-title { color: #26313d; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 .chart-subtitle { color: #87919c; font-size: 12px; }
-.chart-svg { display: block; width: 100%; height: 150px; margin-top: 6px; }
+.chart-svg { display: block; width: 100%; height: 260px; margin-top: 6px; }
 /* Recessive: the data is the ink, the frame is not. */
 .chart-grid { stroke: #e5e7eb; stroke-width: 1; }
 .chart-axis-text { fill: #87919c; font: 10px "SF Mono", Monaco, monospace; }

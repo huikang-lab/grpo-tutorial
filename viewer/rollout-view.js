@@ -3,7 +3,7 @@
 // The training tab opens it at ?run=&step=&rollout=; j / k step through the rollouts, Esc goes back to the step's table.
 
 import {
-  addInfoField, decodeTokenIds, formatNumber, hideTooltip, installShades, loadVocab, openEntryEl, percent, shadeStep,
+  addInfoField, decodeTokenIds, formatAdvantage, formatNumber, hideTooltip, installShades, loadVocab, openEntryEl, percent, shadeStep,
   showTooltip, summaryEl,
 } from "./common.js";
 
@@ -118,7 +118,7 @@ function tokenNode(row, kind, k, piece, shade) {
 }
 
 function rewardText(reward) {
-  return reward.toFixed(1);
+  return Number.isInteger(Math.round(reward * 1e6) / 1e5) ? reward.toFixed(1) : reward.toFixed(6);
 }
 
 function mean(values) {
@@ -162,7 +162,7 @@ function renderSide(row) {
   heading.textContent = `Rollout ${String(row.index).padStart(4, "0")}`;
   sideEl.append(heading);
   sideField("reward", rewardText(row.reward));
-  if (row.advantage !== undefined) sideField("advantage", `${row.advantage > 0 ? "+" : ""}${row.advantage.toFixed(4)}`);
+  if (row.advantage !== undefined) sideField("advantage", formatAdvantage(row.advantage, 4));
   sideField("target", String(row.target));
   sideField("numbers", row.numbers.join(", "));
   sideField("answer", row.equation === null ? "no <answer>" : row.equation);
@@ -203,7 +203,7 @@ function renderSide(row) {
     group.className = "call-list";
     for (const sibling of state.rows.filter((r) => r.group === row.group)) {
       group.append(rolloutButton(sibling, `sample ${sibling.sample} · ${rewardText(sibling.reward)} · ` +
-        `${sibling.advantage > 0 ? "+" : ""}${sibling.advantage.toFixed(2)}`));
+        formatAdvantage(sibling.advantage, 2)));
     }
     sideField(`group ${row.group}`, group);
   }
