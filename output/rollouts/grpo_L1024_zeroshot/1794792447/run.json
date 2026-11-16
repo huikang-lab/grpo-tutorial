@@ -1,0 +1,20 @@
+{
+ "run": "grpo_L1024_zeroshot",
+ "timestamp": 1794792447,
+ "argv": [
+  "--loss_type",
+  "grpo",
+  "--max_tokens",
+  "1024",
+  "--n_grpo_steps",
+  "0",
+  "--run_tag",
+  "zeroshot",
+  "--no-save_model",
+  "--kv_cache_tokens",
+  "655872",
+  "--max_num_seqs",
+  "512"
+ ],
+ "tb_dir": "output/tb/grpo_L1024_zeroshot/1794792447"
+}

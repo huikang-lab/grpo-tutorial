@@ -1,0 +1,13 @@
+{
+ "run": "grpo_no_len_norm_L512_group_lenpen",
+ "timestamp": 1794792267,
+ "argv": [
+  "--loss_type",
+  "grpo_no_len_norm",
+  "--max_tokens",
+  "512",
+  "--run_tag",
+  "group_lenpen"
+ ],
+ "tb_dir": "output/tb/grpo_no_len_norm_L512_group_lenpen/1794792267"
+}
