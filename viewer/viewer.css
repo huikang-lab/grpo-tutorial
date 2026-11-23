@@ -134,7 +134,8 @@ tbody tr:hover { background: #f8fafc; }
 .reward-cell.correct { color: #065f46; background: #a7f3d0; }
 .reward-cell.partial { color: #92400e; background: #fde68a; }
 .reward-cell.none { color: #6b7280; background: #e5e7eb; }
-.reward-cell.truncated { border: 1px dashed #6b7280; }
+/* A zero is almost always a truncation, so only a truncated attempt that still scored is marked. */
+.reward-cell.truncated:not(.none) { border: 1px dashed #6b7280; }
 .loading,
 .empty-state {
   padding: 40px;
