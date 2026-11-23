@@ -123,6 +123,8 @@ tbody tr:hover { background: #f8fafc; }
 }
 .filter-value:hover { text-decoration: underline; }
 .muted { color: #87919c; }
+.more-row td { color: #2196f3; text-align: center; }
+.more-row:hover td { text-decoration: underline; }
 .reward-cells { display: flex; gap: 3px; }
 .reward-cell {
   width: 24px; height: 20px; border: 1px solid transparent; border-radius: 3px;

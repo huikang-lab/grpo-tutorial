@@ -127,14 +127,16 @@ export function writeQuery(values, fields) {
 
 // A sortable, filterable table over index rows. A column is {key, label, num?, filter?, title?, text?(row),
 // value?(row), render?(row)}: `value` is what sorts and filters, `text` what the cell reads, `render` a node drawn in
-// its place. Filters and the sort live in the URL.
-export function createTable({head, body, columns, onOpen, defaultSort, onRender}) {
+// its place. Filters and the sort live in the URL. With pageSize, only that many rows are drawn at first (tens of
+// thousands of rows would stall the page), and a last row draws the next page; filters and sorts still see every row.
+export function createTable({head, body, columns, onOpen, defaultSort, onRender, pageSize = Infinity}) {
   const filterFields = columns.filter((c) => c.filter).map((c) => c.key);
   const filters = readQuery(filterFields);
   const params = new URLSearchParams(location.search);
   let sort = params.get("sort") ? {key: params.get("sort").replace(/^-/, ""), desc: params.get("sort").startsWith("-")}
     : null;
   let rows = [];
+  let limit = pageSize;
 
   // A default sort may name a field no column shows (a run's start time), which then sorts by its raw value.
   const columnOf = (key) => columns.find((c) => c.key === key) ?? {key};
@@ -150,6 +152,7 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
       sort = sort && sort.key === column.key ? {key: column.key, desc: !sort.desc} : {key: column.key, desc: !!column.num};
       const query = new Map([["sort", `${sort.desc ? "-" : ""}${sort.key}`]]);
       writeQuery(query, ["sort"]);
+      limit = pageSize;
       render();
     });
     return th;
@@ -175,6 +178,7 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
         if (filters.get(column.key) === String(value)) filters.delete(column.key);
         else filters.set(column.key, String(value));
         writeQuery(filters, filterFields);
+        limit = pageSize;
         render();
       });
       td.append(button);
@@ -201,13 +205,30 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
       }
       return 0;
     });
-    body.replaceChildren(...shown.map((row) => {
+    const drawn = shown.slice(0, limit).map((row) => {
       const tr = document.createElement("tr");
       tr.append(...columns.map((column) => cell(column, row)));
       tr.addEventListener("click", () => onOpen(row));
       return tr;
-    }));
+    });
+    if (shown.length > limit) drawn.push(moreRow(shown.length));
+    body.replaceChildren(...drawn);
     onRender?.(shown, filters);
+  }
+
+  function moreRow(total) {
+    const tr = document.createElement("tr");
+    tr.className = "more-row";
+    const td = document.createElement("td");
+    td.colSpan = columns.length;
+    const next = Math.min(pageSize, total - limit);
+    td.textContent = `Showing ${formatNumber(limit)} of ${formatNumber(total)} · show ${formatNumber(next)} more`;
+    tr.append(td);
+    tr.addEventListener("click", () => {
+      limit += pageSize;
+      render();
+    });
+    return tr;
   }
 
   return {

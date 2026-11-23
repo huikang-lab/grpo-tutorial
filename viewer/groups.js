@@ -50,7 +50,7 @@ function rewardCells(row) {
 try {
   const [runsIndex, groupsIndex] = await Promise.all([
     loadIndex("runs-index.jsonl", "grpo-runs-index-v1"),
-    loadIndex("groups-index.jsonl", "grpo-groups-index-v2"),
+    loadIndex("groups-index.jsonl", "grpo-groups-index-v3"),
   ]);
   const runs = trainedRuns(runsIndex);
   const kept = new Set(runs.map((r) => `${r.run}/${r.ts}`));
@@ -61,6 +61,7 @@ try {
     columns: COLUMNS,
     // Newest first: the latest run's last step on top, its groups in order.
     defaultSort: [{key: "ts", desc: true}, {key: "step", desc: true}, {key: "group"}],
+    pageSize: 1000,
     onOpen: (row) => {
       location.href = `attempts.html?${new URLSearchParams({run: row.run, step: String(row.step), group: String(row.group)})}`;
     },

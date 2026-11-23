@@ -45,7 +45,7 @@ python train_logged.py --loss_type grpo --max_tokens 256
 - **Runs:** the trained runs and the zero-shot baselines, one row each. A trained run opens its steps.
 - **Steps:** every training step of every run: reward, zero-advantage groups, truncations, loss, grad norm, eval, log-prob diff. A step opens its groups.
 - **Groups:** every group of every step: the prompt, how many of its eight attempts were correct, answered or truncated, and whether it had zero advantage. A group opens its attempts.
-- **Attempts:** the 128 rollouts of one step, filterable to one group. An attempt opens its prompt and completion as one token stream, shaded by surprise or by training minus rollout log-prob, beside its reward and its group.
+- **Attempts:** every rollout of every step, newest first, filterable to a run, step or group. An attempt opens its prompt and completion as one token stream, shaded by surprise or by training minus rollout log-prob, beside its reward and its group.
 - On every table, click a blue value to filter on it and a header to sort; the filters live in the URL. In an attempt, <kbd>j</kbd> / <kbd>k</kbd> step through the attempts and <kbd>Esc</kbd> goes back.
 - **Metrics:** every run on one set of charts, with the zero-shot baselines from `output/zero_shot/L<len>.json` as dashed lines; pick a run for its own charts and config.
 - `./serve.sh` serves in the background, keeps `rollouts-index.jsonl` and `runs-index.jsonl` fresh, and replaces an earlier server on the same port. Logs go to `logs/`.

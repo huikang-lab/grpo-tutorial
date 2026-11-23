@@ -8,7 +8,7 @@ rollouts-index.jsonl: a {"type": "meta"} line, then one line per output/rollouts
 runs-index.jsonl: a {"type": "meta"} line, then one line per output/tb/<run>/<timestamp>/ (a training run) and one per
 output/zero_shot/L<len>.json (a zero-shot baseline).
 groups-index.jsonl: a {"type": "meta"} line, then one line per group of a training step: the prompt's group_size
-rollouts, summarized so the groups tab need not fetch every step file.
+rollouts, summarized so the groups and attempts tabs need not fetch every step file.
 Unchanged step files are not re-read: their entries (and groups) are reused when the path, size and mtime match.
 """
 import argparse
@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional
 
 SCHEMA = "grpo-rollouts-index-v2"
 RUNS_SCHEMA = "grpo-runs-index-v1"
-GROUPS_SCHEMA = "grpo-groups-index-v2"
+GROUPS_SCHEMA = "grpo-groups-index-v3"
 ROOT = Path(__file__).parent
 ROLLOUTS = ROOT / "output" / "rollouts"
 INDEX = ROOT / "rollouts-index.jsonl"
@@ -81,8 +81,11 @@ def summarize_groups(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "reward_std": round((sum((x - mean) ** 2 for x in rewards) / n) ** 0.5, 4),
             "flat": len(set(rewards)) == 1,  # zero advantage: no gradient from the group
             "completion_tokens": sum(r.get("output_tokens", 0) for r in members),
-            # Each attempt in sample order, so the groups tab can draw one cell per attempt.
-            "rewards": rewards,
+            # Each attempt in sample order: the groups tab draws one cell per attempt, and the attempts tab lists
+            # every attempt of every step from these without fetching the step files.
+            "rewards": rewards, "advantages": [r.get("advantage") for r in members],
+            "equations": [r.get("equation") for r in members], "results": [r.get("result") for r in members],
+            "output_tokens": [r.get("output_tokens", 0) for r in members],
             "truncations": [r.get("finish_reason") == "length" for r in members],
         })
     return summaries
