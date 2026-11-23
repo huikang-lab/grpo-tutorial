@@ -9,7 +9,9 @@ body {
   color: #333;
   font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-a { color: #2196f3; text-decoration: none; }
+/* One look for everything clickable: a link that opens a page and a filter value that narrows the table read alike. */
+:root { --link: #2196f3; }
+a { color: var(--link); text-decoration: none; }
 .container {
   width: 100%;
   height: 100%;
@@ -27,7 +29,7 @@ nav {
 nav a { text-decoration: none; }
 nav strong { font-size: 22px; }
 nav strong a { color: #333; }
-nav strong a:hover { color: #2196f3; }
+nav strong a:hover { color: var(--link); }
 .summary {
   flex: 0 0 auto;
   margin-bottom: 14px;
@@ -117,20 +119,20 @@ td {
 tbody tr { cursor: pointer; }
 tbody tr:hover { background: #f8fafc; }
 .filter-value {
-  padding: 0; color: #1d4ed8; background: transparent; border: 0;
+  padding: 0; color: var(--link); background: transparent; border: 0;
   font: inherit; text-align: left; cursor: pointer;
 }
 .muted { color: #87919c; }
 /* A button does not inherit its cell's line-through, so the run and step filters are struck too. */
 tr.zero-adv td, tr.zero-adv .filter-value { color: #9ca3af; text-decoration: line-through; }
 tr.zero-adv .reward-cell { opacity: .5; }
-.more-row td { color: #2196f3; text-align: center; }
+.more-row td { color: var(--link); text-align: center; }
 .reward-cells { display: flex; gap: 3px; }
 .reward-cell {
   width: 24px; height: 20px; border: 1px solid transparent; border-radius: 3px;
   font-size: 11px; line-height: 18px; text-align: center; text-decoration: none;
 }
-.reward-cell:hover { outline: 2px solid #2196f3; outline-offset: 1px; }
+.reward-cell:hover { outline: 2px solid var(--link); outline-offset: 1px; }
 .reward-cell.correct { color: #065f46; background: #a7f3d0; }
 .reward-cell.partial { color: #92400e; background: #fde68a; }
 .reward-cell.none { color: #6b7280; background: #e5e7eb; }
