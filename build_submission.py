@@ -37,6 +37,20 @@ COLOUR: Dict[str, str] = {"grpo": "#2a78d6", "dr_grpo": "#eb6834"}
 REFERENCE: str = "#87919c"
 ZIP_FOLDER: str = "GStar-Assignment-3-GRPO"
 VIEWER_URL: str = "https://huikang-lab.github.io/grpo-tutorial/"
+# The appendix's screenshots of the viewer (report_shots/, taken from ./serve.sh with headless Chrome at 1400 px wide),
+# each beside the live page it shows.
+VIEWER_SHOTS: List[tuple] = [
+    ("1-runs", "Runs", "every run with its settings and final eval; a run opens its steps", "viewer/runs.html"),
+    ("2-metrics", "Metrics", "the training and eval curves of every run, filterable by length and run", "viewer/metrics.html"),
+    ("3-steps", "Steps", "each training step's reward, accuracy, zero-advantage groups, loss and grad norm",
+     "viewer/steps.html?run=grpo_L512"),
+    ("4-groups", "Groups", "each prompt's eight attempts as reward cells; a zero-advantage group is struck through",
+     "viewer/groups.html?run=grpo_L512&step=3"),
+    ("5-attempts", "Attempts", "every rollout with its answer, reward and advantage",
+     "viewer/attempts.html?run=grpo_L512&step=3&group=0"),
+    ("6-attempt", "One attempt", "the prompt and completion, each token shaded by how unlikely the model found it",
+     "viewer/attempts.html?run=grpo_L512&step=3&group=0&rollout=1"),
+]
 
 ESCAPES: Dict[str, str] = {
     "\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_", "{": r"\{", "}": r"\}",
@@ -400,6 +414,13 @@ def report(data: Dict[str, Any], checkpoint_url: str | None) -> str:
     out.append(r"\vspace{-6pt}{\small Final eval answers at step 80. \emph{Answers correct}: the share of answers in "
                r"\texttt{<answer>} tags that were correct.}\par")
     out.extend(notes_latex("EXTRA.md", quote_first=False))
+
+    out.append(r"\newpage" + part("Appendix", "The rollout viewer"))
+    out.append(r"Every training rollout of the runs above can be browsed at \url{" + VIEWER_URL + r"}.\par")
+    for shot, title, what, page in VIEWER_SHOTS:
+        out.append(r"\Needspace{14\baselineskip}\textbf{" + title + r"}: " + escape(what) + r".\\"
+                   r"{\small\url{" + VIEWER_URL + page + r"}}\par\vspace{2pt}"
+                   r"\includegraphics[width=\linewidth]{report_shots/" + shot + r".png}\par\vspace{8pt}")
     out.append(r"\end{document}")
     return "\n\n".join(out) + "\n"
 
