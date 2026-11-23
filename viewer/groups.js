@@ -16,11 +16,6 @@ const COLUMNS = [
   {key: "rewards", label: "Rewards", value: (r) => r.mean_reward, render: rewardCells,
    title: "each attempt's reward in sample order: green correct, amber answered but wrong, grey no answer; " +
      "a dashed border was truncated at max_tokens. Click one to open it."},
-  {key: "correct", label: "Correct", num: true, text: (r) => `${r.correct} of ${r.count}`, title: "reward 1.0"},
-  {key: "answered", label: "Answered", num: true, text: (r) => `${r.answered} of ${r.count}`,
-   title: "attempts with an <answer> tag"},
-  {key: "truncated", label: "Truncated", num: true, text: (r) => `${r.truncated} of ${r.count}`,
-   title: "stopped at max_tokens"},
   {key: "mean_reward", label: "Reward", num: true, text: (r) => formatNumber(r.mean_reward, 3), title: "group mean"},
   {key: "reward_std", label: "Reward std", num: true, text: (r) => formatNumber(r.reward_std, 3)},
   {key: "flat", label: "Zero-adv", filter: true, value: (r) => (r.flat ? "yes" : "no"),
