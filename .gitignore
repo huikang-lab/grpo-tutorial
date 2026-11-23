@@ -8,5 +8,7 @@ slurm-*.out
 logs/
 *.jsonl.tmp
 accuracy.pdf
+extra1.pdf
+extra2.pdf
 REPORT.tex
 SUBMISSION.zip
