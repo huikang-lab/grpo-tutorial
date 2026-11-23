@@ -14,3 +14,20 @@ Advantages of on-policy updates.
 Advantages of off-policy updates.
 - Better hardware utilization. The inference engine keeps generating with slightly stale weights while training runs, instead of waiting for each backward pass and weight reload.
 - This allows rollouts to be reused for several gradient steps. This especially helps early at L256, where successful rollouts are rare and worth extracting more signal from.
+
+
+
+3. Consider a batch with two responses: one short (3 response tokens and 3 masked tokens) and one long (6 response tokens and 0 masked tokens). Assume similar per-token log-prob ratio and advantages, and set the fixed maximum response length to 6 for the masked_mean_drgrpo reduction.
+
+3.1. Apply each reduction to the batch and call backward(), then compare the gradient w.r.t. the per-token log-prob ratio. What do you observe?
+
+Under masked_mean, each token of the short response gets a gradient of 1/6 and each token of the long response 1/12, so a short response's tokens weigh twice as much.
+Under masked_mean_drgrpo, every response token gets a gradient of 1/12, whatever the length of its response.
+The masked tokens get no gradient under either.
+
+3.2. Implications: Give an example scenario where masked_mean is preferable to masked_mean_drgrpo, and one where the opposite is true. Give a brief explanation for each.
+
+Where `masked_mean_drgrpo` is better - LLMs do next token prediction, and training an LLMs is getting the LLMs to predict the better next token given the current capability of the model. If we are biased by length, we are teaching the model that the token leading to the shorter response is better than the token leading to the longer response, even though the truth might not be the case.
+Where `masked_mean` is better - I think `masked_mean` should not be better by principle for the reason I described. However, there is one case I think we might see better performance with `masked_mean`. For example we are sampling the model with a low temperature, and longer sequences perform better than shorter sequences on average. Without length normalization, we are training the model to predict the sampled tokens on average. This results in mode collapse as we are training the model to predict the more likely token. This should be resolved with methods like score centering (where you only move the logprobs of the token the model might have sampled in the sampling config).
+
+
