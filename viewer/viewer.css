@@ -123,6 +123,9 @@ tbody tr:hover { background: #f8fafc; }
 }
 .filter-value:hover { text-decoration: underline; }
 .muted { color: #87919c; }
+/* A button does not inherit its cell's line-through, so the run and step filters are struck too. */
+tr.zero-adv td, tr.zero-adv .filter-value { color: #9ca3af; text-decoration: line-through; }
+tr.zero-adv .reward-cell { opacity: .5; }
 .more-row td { color: #2196f3; text-align: center; }
 .more-row:hover td { text-decoration: underline; }
 .reward-cells { display: flex; gap: 3px; }

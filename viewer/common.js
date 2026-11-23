@@ -129,7 +129,8 @@ export function writeQuery(values, fields) {
 // value?(row), render?(row)}: `value` is what sorts and filters, `text` what the cell reads, `render` a node drawn in
 // its place. Filters and the sort live in the URL. With pageSize, only that many rows are drawn at first (tens of
 // thousands of rows would stall the page), and a last row draws the next page; filters and sorts still see every row.
-export function createTable({head, body, columns, onOpen, defaultSort, onRender, pageSize = Infinity}) {
+// rowClass(row) may name a class for a row.
+export function createTable({head, body, columns, onOpen, defaultSort, onRender, pageSize = Infinity, rowClass}) {
   const filterFields = columns.filter((c) => c.filter).map((c) => c.key);
   const filters = readQuery(filterFields);
   const params = new URLSearchParams(location.search);
@@ -207,6 +208,8 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender,
     });
     const drawn = shown.slice(0, limit).map((row) => {
       const tr = document.createElement("tr");
+      const cls = rowClass?.(row);
+      if (cls) tr.className = cls;
       tr.append(...columns.map((column) => cell(column, row)));
       tr.addEventListener("click", () => onOpen(row));
       return tr;

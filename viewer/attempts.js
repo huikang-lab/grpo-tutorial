@@ -55,8 +55,11 @@ try {
     if (!entry) {
       showEmpty(`No training step ${query.get("step") ?? ""} in ${query.get("run") ?? "(no run)"}.`);
     } else {
+      // The rail lists the opened attempt's group only, so j / k move between its siblings.
+      const rows = await fetchJsonl(entry.path);
+      const opened = rows.find((r) => String(r.index) === query.get("rollout")) ?? rows[0];
       await openRollout({
-        entry, rows: await fetchJsonl(entry.path), method: methodText(open),
+        entry, rows: rows.filter((r) => r.group === opened.group), method: methodText(open),
         onClose: () => {
           const back = new URLSearchParams(location.search);
           back.delete("rollout");

@@ -1,6 +1,6 @@
 // The groups tab: every group of every training step, the prompt's eight attempts summarized in one row, newest step
 // first, with one cell per attempt's reward. A group whose attempts all scored the same has zero advantage and teaches
-// nothing. ?run= and ?step= narrow it; a group opens its attempts, a reward cell that one attempt.
+// nothing, so its row is struck through. ?run= and ?step= narrow it; a group opens its attempts, a reward cell that one attempt.
 
 import {
   addInfoField, createTable, fatal, formatNumber, hideLoading, loadIndex, methodText, percent, showEmpty, summarize,
@@ -18,8 +18,6 @@ const COLUMNS = [
      "hover for whether it was truncated at max_tokens. Click one to open it."},
   {key: "mean_reward", label: "Reward", num: true, text: (r) => formatNumber(r.mean_reward, 3), title: "group mean"},
   {key: "reward_std", label: "Reward std", num: true, text: (r) => formatNumber(r.reward_std, 3)},
-  {key: "flat", label: "Zero-adv", filter: true, value: (r) => (r.flat ? "yes" : "no"),
-   title: "every attempt scored the same, so every advantage is zero"},
   {key: "completion_tokens", label: "Generated", num: true, text: (r) => formatNumber(r.completion_tokens)},
 ];
 
@@ -62,6 +60,8 @@ try {
     // Newest first: the latest run's last step on top, its groups in order.
     defaultSort: [{key: "ts", desc: true}, {key: "step", desc: true}, {key: "group"}],
     pageSize: 1000,
+    // A group whose attempts all scored the same has zero advantage: struck through, since it teaches nothing.
+    rowClass: (row) => (row.flat ? "zero-adv" : ""),
     onOpen: (row) => {
       location.href = `attempts.html?${new URLSearchParams({run: row.run, step: String(row.step), group: String(row.group)})}`;
     },

@@ -1,4 +1,4 @@
-// One rollout of a training step: the step's rollouts down the rail, the selected one's prompt and completion as one
+// One rollout of a training step: the rollouts it is given (its group's) down the rail, the selected one's prompt and completion as one
 // token stream shaded by surprise (or by training minus rollout log-prob), and what it scored beside it with its group.
 // The attempts tab opens it at ?run=&step=&rollout=; j / k step through the rollouts, Esc goes back to the step's table.
 
@@ -212,8 +212,9 @@ function renderSide(row) {
 function renderRail() {
   const entry = state.entry;
   summaryEl.replaceChildren();
+  // Counted over the rollouts on the rail (a shaped reward scores a correct answer just under 1.0).
   for (const text of [`${formatNumber(state.rows.length)} rollouts`,
-    `${formatNumber(percent(entry.correct, entry.count), 1)}% correct`]) {
+    `${formatNumber(percent(state.rows.filter((r) => r.reward > 0.5).length, state.rows.length), 1)}% correct`]) {
     const line = document.createElement("div");
     line.textContent = text;
     summaryEl.append(line);
@@ -222,6 +223,8 @@ function renderRail() {
   addInfoField("run", entry.run);
   addInfoField("method", state.method);
   addInfoField("step", String(entry.step));
+  const groups = new Set(state.rows.map((r) => r.group));
+  if (groups.size === 1) addInfoField("group", String(state.rows[0].group));
   const field = addInfoField("rollouts", "");
   field.lastElementChild.remove();
   const list = document.createElement("div");
