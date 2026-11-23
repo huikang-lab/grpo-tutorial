@@ -1,4 +1,4 @@
-{"type":"meta","schema":"grpo-rollouts-index-v2","generated_at":"2026-11-16T01:50:19Z","total":628}
+{"type":"meta","schema":"grpo-rollouts-index-v2","generated_at":"2026-11-23T06:13:42Z","total":628}
 {"type":"entry","path":"output/rollouts/dr_grpo_L256/1794729704/eval/step_0000.jsonl","run":"dr_grpo_L256","ts":1794729704,"split":"eval","step":0,"size":3156981,"mtime":1794767707,"count":1024,"correct":3,"partial":0,"wrong":1021,"mean_reward":0.0029,"truncated":1021,"completion_tokens":262077}
 {"type":"entry","path":"output/rollouts/dr_grpo_L256/1794729704/eval/step_0010.jsonl","run":"dr_grpo_L256","ts":1794729704,"split":"eval","step":10,"size":3058568,"mtime":1794767707,"count":1024,"correct":166,"partial":6,"wrong":852,"mean_reward":0.1627,"truncated":852,"completion_tokens":257108}
 {"type":"entry","path":"output/rollouts/dr_grpo_L256/1794729704/eval/step_0020.jsonl","run":"dr_grpo_L256","ts":1794729704,"split":"eval","step":20,"size":2877573,"mtime":1794767707,"count":1024,"correct":329,"partial":1,"wrong":694,"mean_reward":0.3214,"truncated":694,"completion_tokens":242013}

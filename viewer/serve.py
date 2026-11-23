@@ -4,7 +4,7 @@ The repository server: pages from viewer/, everything else from the root (stdlib
     ./serve.sh                                  # starts this with the index watcher, then prints every page's URL
     python viewer/serve.py --port 44834 --root .
 
-The viewers live in this directory but serve under their bare names (/training.html, /metrics.html). A top-level name
+The viewers live in this directory but serve under their bare names (/runs.html, /metrics.html, …). A top-level name
 the root has itself (the indexes, index.html) stays the root's; only what the root does not have falls through to viewer/.
 """
 import argparse

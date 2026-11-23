@@ -1,38 +1,16 @@
 <!doctype html>
+<!-- The old training tab, split into Runs, Steps and Attempts: its links land on the tab that now shows the same view. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,">
-  <title>GRPO training</title>
-  <link rel="stylesheet" href="viewer.css">
+  <title>GRPO runs</title>
+  <script>
+    const query = new URLSearchParams(location.search);
+    const page = !query.get("run") ? "runs.html" : query.get("step") ? "attempts.html" : "steps.html";
+    location.replace(page + location.search);
+  </script>
 </head>
 <body>
-  <div id="tooltip" class="tooltip"></div>
-  <div class="container">
-    <div class="rail">
-      <nav>
-        <strong><a href="training.html">Training</a></strong><br>
-        <a href="metrics.html">Metrics</a>
-      </nav>
-      <div id="summary" class="summary"></div>
-      <div id="open-entry" class="open-entry"></div>
-    </div>
-    <div class="view">
-      <div class="table-wrap">
-        <table>
-          <thead><tr id="table-head"></tr></thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-      <div id="loading-state" class="loading">Loading the training runs…</div>
-      <div id="empty-state" class="empty-state">No training runs found. Train with train_logged.py, then run ./serve.sh.</div>
-      <section id="detail-section">
-        <div id="token-content" class="token-content"></div>
-        <div id="side-panel" class="side-panel"></div>
-      </section>
-    </div>
-  </div>
-  <script type="module" src="training.js"></script>
+  <a href="runs.html">Runs</a>
 </body>
 </html>

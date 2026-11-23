@@ -1,5 +1,5 @@
 /* The arc3-coach viewer family's look: a rail that says what the page is and what is open, and a pane beside it that
-   is whatever you are looking at. Shared by rollouts.html, training.html and metrics.html. */
+   is whatever you are looking at. Shared by every tab. */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
@@ -123,6 +123,16 @@ tbody tr:hover { background: #f8fafc; }
 }
 .filter-value:hover { text-decoration: underline; }
 .muted { color: #87919c; }
+.reward-cells { display: flex; gap: 3px; }
+.reward-cell {
+  width: 24px; height: 20px; border: 1px solid transparent; border-radius: 3px;
+  font-size: 11px; line-height: 18px; text-align: center; text-decoration: none;
+}
+.reward-cell:hover { outline: 2px solid #2196f3; outline-offset: 1px; }
+.reward-cell.correct { color: #065f46; background: #a7f3d0; }
+.reward-cell.partial { color: #92400e; background: #fde68a; }
+.reward-cell.none { color: #6b7280; background: #e5e7eb; }
+.reward-cell.truncated { border: 1px dashed #6b7280; }
 .loading,
 .empty-state {
   padding: 40px;

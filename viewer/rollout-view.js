@@ -1,6 +1,6 @@
 // One rollout of a training step: the step's rollouts down the rail, the selected one's prompt and completion as one
 // token stream shaded by surprise (or by training minus rollout log-prob), and what it scored beside it with its group.
-// The training tab opens it at ?run=&step=&rollout=; j / k step through the rollouts, Esc goes back to the step's table.
+// The attempts tab opens it at ?run=&step=&rollout=; j / k step through the rollouts, Esc goes back to the step's table.
 
 import {
   addInfoField, decodeTokenIds, formatAdvantage, formatNumber, hideTooltip, installShades, loadVocab, openEntryEl, percent, shadeStep,

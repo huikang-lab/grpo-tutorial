@@ -1,4 +1,4 @@
-// What training.html and metrics.html share: loading the indexes, the URL-borne filters with *
+// What the five tabs (runs, metrics, steps, groups, attempts) share: loading the indexes, the URL-borne filters with *
 // wildcards, the sortable table, the rail's fields and the tooltip. Like arc3-coach's viewers, no library.
 
 export const tooltipEl = document.querySelector("#tooltip");
@@ -126,7 +126,8 @@ export function writeQuery(values, fields) {
 }
 
 // A sortable, filterable table over index rows. A column is {key, label, num?, filter?, title?, text?(row),
-// value?(row)}: `value` is what sorts and filters, `text` what the cell reads. Filters and the sort live in the URL.
+// value?(row), render?(row)}: `value` is what sorts and filters, `text` what the cell reads, `render` a node drawn in
+// its place. Filters and the sort live in the URL.
 export function createTable({head, body, columns, onOpen, defaultSort, onRender}) {
   const filterFields = columns.filter((c) => c.filter).map((c) => c.key);
   const filters = readQuery(filterFields);
@@ -135,6 +136,8 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
     : null;
   let rows = [];
 
+  // A default sort may name a field no column shows (a run's start time), which then sorts by its raw value.
+  const columnOf = (key) => columns.find((c) => c.key === key) ?? {key};
   const valueOf = (column, row) => (column.value ? column.value(row) : row[column.key]);
 
   head.replaceChildren(...columns.map((column) => {
@@ -157,7 +160,9 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
     if (column.num) td.className = "num";
     const value = valueOf(column, row);
     const text = column.text ? column.text(row) : (value ?? "—");
-    if (column.filter && value !== undefined && value !== null) {
+    if (column.render) {
+      td.append(column.render(row));
+    } else if (column.filter && value !== undefined && value !== null) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "filter-value";
@@ -187,7 +192,7 @@ export function createTable({head, body, columns, onOpen, defaultSort, onRender}
     const order = sort ? [sort] : defaultSort;
     shown = [...shown].sort((a, b) => {
       for (const {key, desc} of order) {
-        const column = columns.find((c) => c.key === key);
+        const column = columnOf(key);
         const x = valueOf(column, a), y = valueOf(column, b);
         if (x === y) continue;
         if (x === undefined || x === null || Number.isNaN(x)) return 1;
@@ -301,4 +306,41 @@ export function fatal(error) {
   document.querySelector("#loading-state").style.display = "none";
   empty.style.display = "block";
   empty.textContent = error.message || String(error);
+}
+
+// The rail's lines under the nav: what the table shows right now.
+export function summarize(lines) {
+  summaryEl.replaceChildren();
+  for (const [text, cls] of lines) {
+    const line = document.createElement("div");
+    line.textContent = text;
+    if (cls) line.className = cls;
+    summaryEl.append(line);
+  }
+}
+
+export const METHODS = {grpo: "grpo", dr_grpo: "dr-grpo", grpo_no_len_norm: "grpo-no-len-norm"};
+
+export function methodText(run) {
+  return `${METHODS[run.config.loss_type] ?? run.config.loss_type} · L${run.config.max_tokens}`;
+}
+
+// A run too short to compare (a smoke test) is left out of every tab.
+export const MIN_STEPS = 10;
+
+// The runs the tabs show: each name's newest start, trained for at least MIN_STEPS.
+export function trainedRuns(runsIndex) {
+  const runs = runsIndex.filter((r) => r.type === "run");
+  const newest = newestByRun(runs);
+  return runs.filter((r) => newest.get(r.run) === r.ts && r.config.n_grpo_steps >= MIN_STEPS);
+}
+
+export function hideLoading() {
+  document.querySelector("#loading-state").style.display = "none";
+}
+
+export function showEmpty(text) {
+  const empty = document.querySelector("#empty-state");
+  if (text) empty.textContent = text;
+  empty.style.display = "block";
 }

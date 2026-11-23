@@ -83,15 +83,20 @@ printf '%s\n' "$!" > "$INDEX_PID_FILE"
 cat <<URLS
 
 GRPO rollouts:
-  Training: http://$HOST:$PORT/training.html
+  Runs:     http://$HOST:$PORT/runs.html
   Metrics:  http://$HOST:$PORT/metrics.html
+  Steps:    http://$HOST:$PORT/steps.html
+  Groups:   http://$HOST:$PORT/groups.html
+  Attempts: http://$HOST:$PORT/attempts.html
   Files:    http://$HOST:$PORT/output/rollouts/
 
-Open a run, a step's rollouts, or one rollout with:
-  http://$HOST:$PORT/training.html?run=<run>&step=<step>&rollout=<index>
+Open a run's steps, a step's groups, a group's attempts, or one attempt with:
+  http://$HOST:$PORT/steps.html?run=<run>
+  http://$HOST:$PORT/groups.html?run=<run>&step=<step>
+  http://$HOST:$PORT/attempts.html?run=<run>&step=<step>&group=<group>&rollout=<index>
 
 Serving $ROOT_DIR in the background (re-run ./serve.sh to restart)
-Refreshing rollouts-index.jsonl and runs-index.jsonl every $INDEX_INTERVAL_SECONDS seconds
+Refreshing rollouts-index.jsonl, groups-index.jsonl and runs-index.jsonl every $INDEX_INTERVAL_SECONDS seconds
 
 Copy the Modal runs here first:
   mkdir -p output && uvx modal volume get --force grpo-output rollouts output/ && uvx modal volume get --force grpo-output tb output/

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>GRPO groups</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <div id="tooltip" class="tooltip"></div>
+  <div class="container">
+    <div class="rail">
+      <nav>
+        <a href="runs.html">Runs</a><br>
+        <a href="metrics.html">Metrics</a><br>
+        <a href="steps.html">Steps</a><br>
+        <strong><a href="groups.html">Groups</a></strong><br>
+        <a href="attempts.html">Attempts</a>
+      </nav>
+      <div id="summary" class="summary"></div>
+      <div id="open-entry" class="open-entry"></div>
+    </div>
+    <div class="view">
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="table-head"></tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div id="loading-state" class="loading">Loading every step’s groups…</div>
+      <div id="empty-state" class="empty-state">No training runs found. Train with train_logged.py, then run ./serve.sh.</div>
+    </div>
+  </div>
+  <script type="module" src="groups.js"></script>
+</body>
+</html>
